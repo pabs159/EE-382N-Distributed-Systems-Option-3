@@ -2,9 +2,9 @@ import java.util.Scanner;
 
 public class Client {
   public static void main (String[] args) {
-    String hostAddress;
-    int tcpPort;
-    int udpPort;
+    String hostAddress = "127.0.0.1";
+    int tcpPort = 5000;
+    int udpPort = 5001;
 
     if (args.length != 3) {
       System.out.println("ERROR: Provide 3 arguments");
