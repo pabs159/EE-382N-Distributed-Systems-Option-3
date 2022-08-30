@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.*;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Scanner;
 
@@ -34,16 +35,23 @@ public class Server {
     Server s = new Server(fileName);
 
     // parse the inventory file
-    //readFile(fileName);
-    //System.out.println(inventory);
+//    readFile(fileName);
+//    System.out.println(inventory);
 
 
     // TODO: handle request from clients`
     try (ServerSocket serverSocket = new ServerSocket(tcpPort)) {
- 
-      System.out.println("Server is listening on port " + tcpPort);
 
+      System.out.println("Server is listening on TCP port " + tcpPort);
+      System.out.println("Server is listening on UDP port " + udpPort);
+
+      DatagramSocket datagramSocket = new DatagramSocket(udpPort);
       while (true) {
+//        byte[] buffer = new byte[1024];
+//        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+//        datagramSocket.receive(packet);
+//        String str = new String(buffer, 0, packet.getLength());
+//        System.out.println(str);
           Socket socket = serverSocket.accept();
           System.out.println("New client connected");
 
