@@ -7,7 +7,6 @@ import java.net.*;
 
 public class Client {
 
-
   static String hostname = "127.0.0.1";
   static int port = 6060;
   private static String tcpProtocol = "T";
@@ -18,7 +17,7 @@ public class Client {
   private String cmdToSend;
 
   public void connectToServerUDP() {
-
+    // do stuff like tc below expect its udp 
   }
 
   public void connectToServerTCP() throws InterruptedException{
@@ -30,9 +29,9 @@ public class Client {
 
       Console console = System.console();
       do{
-
       cmdStr = console.readLine("Enter a server command: ");
       cmdToSend = getCommand(cmdStr);
+      // If getCommand() returns Error the users input was invalid 
       if(cmdToSend.toUpperCase().equals("ERROR")){
         System.out.println("Error invalid command to send to server!!");
         continue;
@@ -41,8 +40,9 @@ public class Client {
 
       InputStream input = this.sock.getInputStream();
       BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-      String time = reader.readLine();
-      System.out.println(time);
+      String resp = reader.readLine();
+      // resp is the reply from the server
+      System.out.println(resp);
 
       }while(!cmdStr.equals("bye"));
 
@@ -54,8 +54,10 @@ public class Client {
     }
   }
 
+  // Can be used by both protocols 
   public String getCommand(String command){
     if (command.equals("purchase")) {
+      // For now send a template 
       return "purchase <username> <product-name> <quantity>";
     } else if (command.equals("cancel")) {
 
@@ -69,7 +71,6 @@ public class Client {
     }
     return "Error";
 
-    
   }
 
   public void runClient(String hostname, int tcpPort, int udpPort){
@@ -97,9 +98,7 @@ public class Client {
             else if (mode.toUpperCase().equals(udpProtocol)){
               connectToServerUDP();
             }
-           
           }
-          
         }
 
         catch (Exception e) {
@@ -109,6 +108,7 @@ public class Client {
 
        
       }
+      /* 
     try {  
       this.sock.close();
       }
@@ -119,7 +119,7 @@ public class Client {
       catch (IOException ex){
         System.out.println("Error closing socket ");
         ex.printStackTrace();
-      }
+      }*/
     }
 
   }

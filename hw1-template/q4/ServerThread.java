@@ -6,13 +6,29 @@ import java.net.*;
  */
 public class ServerThread extends Thread {
     private Socket socket;
- 
-    public ServerThread(Socket socket) {
+    private String currentCmd;
+    public String serverRsp;
+
+    Inventory inv; // holds all things inventory related including r/w 
+
+    private void getFile(){
+        this.inv.readFile();
+        System.out.println(Inventory.inventory);
+    }
+    public ServerThread(Inventory i, Socket socket) {
+        this.inv = i;
         this.socket = socket;
+    }
+
+    private void parseCommand(String command){
+        this.currentCmd = command;
+        getFile();
+        this.serverRsp = "a response from the server";
     }
  
     
     public void run() {
+        
         try {
             InputStream input = socket.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
@@ -20,14 +36,12 @@ public class ServerThread extends Thread {
             OutputStream output = socket.getOutputStream();
             PrintWriter writer = new PrintWriter(output, true);
  
- 
-            String text;
- 
             do {
-                text = reader.readLine();
+                currentCmd = reader.readLine();
+                parseCommand(currentCmd);
                 //String reverseText = new StringBuilder(text).reverse().toString();
-                writer.println("Server: " + text);
-            } while (!text.equals("bye"));
+                writer.println("Server: " + this.serverRsp);
+            } while (!currentCmd.equals("bye"));
 
             System.out.println("Closing Server side socket!");
             socket.close();
@@ -36,4 +50,5 @@ public class ServerThread extends Thread {
             ex.printStackTrace();
         }  
     }
+
 }
