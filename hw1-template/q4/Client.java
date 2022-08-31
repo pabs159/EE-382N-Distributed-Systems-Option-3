@@ -17,8 +17,26 @@ public class Client {
   private String cmdToSend;
 
   public void connectToServerUDP() {
-    // do stuff like tc below expect its udp 
+    int port = 6061;
+    int len = 1000;
+    String command;
+    DatagramPacket packet;
+    Scanner sc = new Scanner(System.in);
+    do {
+      System.out.println("UDP connection chosen, enter your command:");
+      command = sc.nextLine();
+      byte[] buffer = new byte[command.length()];
+      try {
+        DatagramSocket socket = new DatagramSocket();
+        buffer = command.getBytes();
+        packet = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost(), port);
+        socket.send(packet);
+      } catch (IOException e) {
+        System.err.println(e);
+      }
+    }while(!command.equals("bye"));
   }
+  
 
   public void connectToServerTCP() throws InterruptedException{
     String cmdStr;
@@ -85,7 +103,6 @@ public class Client {
           continue;
         }
         // What if they only enter a token of length 0?      
-        System.out.println(tokens.length);
         
 
         try {

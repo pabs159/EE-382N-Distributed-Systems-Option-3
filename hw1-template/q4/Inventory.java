@@ -10,7 +10,7 @@ public class Inventory {
     private static String defaultFilePath = "./input/inventory.txt";
     public String filePath;
     private static String reg = "\\s+";
-    public static Hashtable< String, Integer> inventory = new Hashtable< String, Integer>();
+    public Hashtable< String, Integer> inventoryTable = new Hashtable< String, Integer>();
 
     public Inventory(String fp){
       this.filePath = fp;
@@ -28,7 +28,7 @@ public class Inventory {
             break;
           }
           String[] s = data.split(reg);
-          inventory.put(s[0], Integer.parseInt(s[1]));
+          inventoryTable.put(s[0], Integer.parseInt(s[1]));
 
         }
         myFileScanner.close();

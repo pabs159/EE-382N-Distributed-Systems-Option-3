@@ -1,29 +1,95 @@
-import java.io.File;
-import java.io.FileNotFoundException;
+//import java.io.File;
+//import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.*;
-import java.util.Hashtable;
-import java.util.Scanner;
+//import java.util.Hashtable;
+//import java.util.Scanner;
 
 public class Server {
+  // Create inventory object 
   Inventory inv;
 
-
-  public Server(String filePath){
-    inv = new Inventory(filePath);
+  // Constructor 
+  public Server(int port, String filePath){
+    //inv = new Inventory(filePath);
+    this.inv = new Inventory(filePath);
   }
+
+  public void run(){
+  }
+
+  public void startServer() {
+  }
+
+  private void parseCommand(){
+    // ToDo
+  }
+}
+
+class TCPServer extends Server {
+  public int tcpPort;
   
+  public TCPServer(int tcpPort, String filePath) {
+    super(tcpPort, filePath);
+    this.tcpPort = tcpPort;
+    
+  }
+
+  public void startServer(){
+    System.out.println("Inside start server");
+    try (ServerSocket serverSocket = new ServerSocket(this.tcpPort)) {
+  
+      System.out.println("TCP Server is listening on port " + tcpPort);
+
+      //while (true) {
+          Socket socket = serverSocket.accept();
+          System.out.println("New client connected");
+          TCPServerThread tcp1 = new TCPServerThread(super.inv, socket, null);
+          new Thread(tcp1).start();
+      //}
+
+    } catch (IOException ex) {
+        System.out.println("Server exception: " + ex.getMessage());
+        ex.printStackTrace();
+    }
+  }
+}
+
+class UDPServer extends Server {
+  public int udpPort;
+
+  public UDPServer(int udpPort, String filePath) {
+    super(udpPort, filePath);
+    this.udpPort = udpPort;
+  
+  }
+
+  public void startServer(){
+    DatagramSocket socket = null;
+    try{
+      socket = new DatagramSocket(this.udpPort);
+      System.out.println("UDP server started on port: " + this.udpPort);
+      UDPServerThread udp1 = new UDPServerThread(super.inv, null, socket);
+      new Thread(udp1).start();
+    }
+    catch (Exception e) {
+      System.out.println("Error: " + e.getMessage());
+    }
+  }
+}
+
+
+class ServerTester{
   public static void main (String[] args) {
     
 
     int tcpPort = 6060;
-    int udpPort = 0;
+    int udpPort = 6061;
     if (args.length != 3) {
       System.out.println("ERROR: Provide 3 arguments");
       System.out.println("\t(1) <tcpPort>: the port number for TCP connection");
       System.out.println("\t(2) <udpPort>: the port number for UDP connection");
       System.out.println("\t(3) <file>: the file of inventory");
-
       System.exit(-1);
     }
 
@@ -31,31 +97,17 @@ public class Server {
     udpPort = Integer.parseInt(args[1]);
     String fileName = args[2];
 
-    Server s = new Server(fileName);
+    Server tcpServer = new TCPServer(tcpPort, fileName);
 
-    // parse the inventory file
-    //readFile(fileName);
-    //System.out.println(inventory);
+    tcpServer.startServer();
+    // Will need to either spin these off as their own threads since the while loop in the 
+    // individual threads block the program or multiple "tester" instances to have both UDP and TCP runing
 
+    Server udpServer = new UDPServer(udpPort, fileName);
 
-    // TODO: handle request from clients`
-    try (ServerSocket serverSocket = new ServerSocket(tcpPort)) {
- 
-      System.out.println("Server is listening on port " + tcpPort);
-
-      while (true) {
-          Socket socket = serverSocket.accept();
-          System.out.println("New client connected");
-
-          new ServerThread(s.inv, socket).start();
-      }
-
-  } catch (IOException ex) {
-      System.out.println("Server exception: " + ex.getMessage());
-      ex.printStackTrace();
-  }
+    udpServer.startServer();
 
   }
-
-
 }
+
+
