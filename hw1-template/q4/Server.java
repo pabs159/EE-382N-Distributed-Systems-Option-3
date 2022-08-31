@@ -2,14 +2,11 @@
 //import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.*;
-<<<<<<< HEAD
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Scanner;
-=======
 //import java.util.Hashtable;
 //import java.util.Scanner;
->>>>>>> stableDev
 
 public class Server {
   // Create inventory object 
@@ -102,60 +99,6 @@ class ServerTester{
     tcpPort = Integer.parseInt(args[0]);
     udpPort = Integer.parseInt(args[1]);
     String fileName = args[2];
-
-<<<<<<< HEAD
-    new Thread((new Runnable() {
-      int udpPort;
-      public void run() {
-        System.out.println("Server is listening on UDP port " + udpPort);
-        try {
-            DatagramSocket datagramSocket = new DatagramSocket(udpPort);
-            while (true) {
-                byte[] buffer = new byte[1024];
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                datagramSocket.receive(packet);
-                String str = new String(buffer, 0, packet.getLength());
-                String[] splitStr = str.split(" ");
-                String methodStr = splitStr[0];
-
-                if (methodStr.equals("purchase")) {  // todo this needs to interact with inventory here
-                    System.out.println("Purchasing for user __ product __ quantity __");
-                } else if (methodStr.equals("cancel")) {
-                    System.out.println("Cancel order with id of ____");
-                } else if (methodStr.equals("search")) {
-                    System.out.println("Searching all orders for user _____");
-                } else if (methodStr.equals("list")) {
-                    System.out.println("Listing available products with their quantities");
-                } else {  // todo add command to exit loop
-                    System.out.println("wut?");
-                }
-            }
-        } catch (IOException e) {
-          System.err.println(e.getMessage());
-        }
-      }
-      public Runnable pass(int udpPort) {
-        this.udpPort = udpPort;
-        return this;
-      }
-    }).pass(udpPort)).start();
-
-
-    Server s = new Server(fileName);
-
-    // parse the inventory file
-//    readFile(fileName);
-//    System.out.println(inventory);
-
-
-    // TODO: handle request from clients`
-    try (ServerSocket serverSocket = new ServerSocket(tcpPort)) {
-
-      System.out.println("Server is listening on TCP port " + tcpPort);
-      while (true) {
-          Socket socket = serverSocket.accept();
-          System.out.println("New client connected");
-=======
     Server tcpServer = new TCPServer(tcpPort, fileName);
 
     tcpServer.startServer();
@@ -163,7 +106,6 @@ class ServerTester{
     // individual threads block the program or multiple "tester" instances to have both UDP and TCP runing
 
     Server udpServer = new UDPServer(udpPort, fileName);
->>>>>>> stableDev
 
     udpServer.startServer();
 

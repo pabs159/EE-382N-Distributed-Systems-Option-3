@@ -17,24 +17,15 @@ public class Client {
   private String cmdToSend;
 
   public void connectToServerUDP() {
-<<<<<<< HEAD
-    int port = 49152;
-    int len = 1024;
-=======
     int port = 6061;
     int len = 1000;
->>>>>>> stableDev
     String command;
     DatagramPacket packet;
     Scanner sc = new Scanner(System.in);
     do {
       System.out.println("UDP connection chosen, enter your command:");
       command = sc.nextLine();
-<<<<<<< HEAD
-      byte[] buffer;
-=======
       byte[] buffer = new byte[command.length()];
->>>>>>> stableDev
       try {
         DatagramSocket socket = new DatagramSocket();
         buffer = command.getBytes();
@@ -43,12 +34,7 @@ public class Client {
       } catch (IOException e) {
         System.err.println(e);
       }
-<<<<<<< HEAD
-  }while(!command.equals("bye"));
-
-=======
     }while(!command.equals("bye"));
->>>>>>> stableDev
   }
   
 
