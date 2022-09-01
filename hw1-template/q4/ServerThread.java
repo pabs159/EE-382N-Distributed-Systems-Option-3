@@ -102,38 +102,52 @@ class UDPServerThread extends ServerThread {
         this.dsSocket = dsSocket;
     }
 
-    private void getFile(){
-        System.out.println(this.inv.inventoryTable);
-        this.inv.readFile();
-        this.inv.inventoryTable.put("phone", 5);
-        System.out.println(this.inv.inventoryTable);
-    }
+//    private void getFile(){
+//        System.out.println(this.inv.inventoryTable);
+//        this.inv.readFile();
+//        this.inv.inventoryTable.put("phone", 5);
+//        System.out.println(this.inv.inventoryTable);
+//    }
 
-    private void parseCommand(String command){
-        this.currentCmd = command;
-        getFile();
-        this.serverRsp = "a response from the server";
+    private String parseCommand(String command){
+        String[] splitStr = command.split(" ");
+        String methodStr = splitStr[0];
+
+        switch (methodStr) {
+            case "purchase" ->
+                    System.out.println("Purchasing for user __ product __ quantity __");
+            case "cancel" -> System.out.println("Cancel order with id of ____");
+            case "search" -> System.out.println("Searching all orders for user _____");
+            case "list" -> {
+                System.out.println("Listing available sorted products with their quantities");
+                return this.inv.list();
+            }
+            default ->
+                    System.out.println("wut?");
+        }
+        return "";
     }
  
     public void run() {   
         try {
-            String msg = "server udp reply";
-            byte[] word = new byte[1024];
-            byte[] r = new byte[msg.length()];
-            r = msg.getBytes();
+            String msg = "";
+            byte[] buffer = new byte[1024];
             do{
                 // Get client request
-                DatagramPacket request = new DatagramPacket(word, word.length);
-                msg = new String(word);
-                System.out.println(word.length);
-                System.out.println("msg from udp client: " + msg);
-                this.dsSocket.receive(request);
-                //String str = "reply from UDP server";
-                
-                // Put reply into packet, send packet to client
-                DatagramPacket reply = new DatagramPacket(r, r.length, request.getAddress(), request.getPort());
+                DatagramPacket rRequest = new DatagramPacket(buffer, buffer.length);
+                this.dsSocket.receive(rRequest);
+                msg = new String(buffer, 0, rRequest.getLength());
+
+                String returnString = parseCommand(msg);
+
+                DatagramPacket reply = new DatagramPacket(
+                        returnString.getBytes(),
+                        returnString.getBytes().length,
+                        rRequest.getAddress(),
+                        rRequest.getPort()
+                );
                 this.dsSocket.send(reply);
-            }while(msg != "bye");
+            }while(!msg.equals("bye"));
 
         } catch (IOException ex) {
             System.out.println("Server exception: " + ex.getMessage());

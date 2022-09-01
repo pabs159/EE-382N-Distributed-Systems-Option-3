@@ -25,12 +25,20 @@ public class Client {
     do {
       System.out.println("UDP connection chosen, enter your command:");
       command = sc.nextLine();
-      byte[] buffer = new byte[command.length()];
+      byte[] buffer;
       try {
         DatagramSocket socket = new DatagramSocket();
         buffer = command.getBytes();
         packet = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost(), port);
         socket.send(packet);
+
+        // receive packet from server
+        byte[] rBuffer = new byte[4096];
+        DatagramPacket rRequest = new DatagramPacket(rBuffer, rBuffer.length);
+        socket.receive(rRequest);
+        String msg = new String(rBuffer, 0, rRequest.getLength());
+        System.out.println(msg);
+
       } catch (IOException e) {
         System.err.println(e);
       }

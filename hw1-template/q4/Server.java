@@ -13,12 +13,13 @@ public class Server {
   Inventory inv;
 
   // Constructor 
-  public Server(int port, String filePath){
+  public Server(int port, Inventory inventory){
     //inv = new Inventory(filePath);
-    this.inv = new Inventory(filePath);
+    this.inv = inventory;
   }
 
   public void run(){
+    System.out.println("here?");
   }
 
   public void startServer() {
@@ -32,8 +33,8 @@ public class Server {
 class TCPServer extends Server {
   public int tcpPort;
   
-  public TCPServer(int tcpPort, String filePath) {
-    super(tcpPort, filePath);
+  public TCPServer(int tcpPort, Inventory inventory) {
+    super(tcpPort, inventory);
     this.tcpPort = tcpPort;
     
   }
@@ -61,10 +62,9 @@ class TCPServer extends Server {
 class UDPServer extends Server {
   public int udpPort;
 
-  public UDPServer(int udpPort, String filePath) {
-    super(udpPort, filePath);
+  public UDPServer(int udpPort, Inventory inventory) {
+    super(udpPort, inventory);
     this.udpPort = udpPort;
-  
   }
 
   public void startServer(){
@@ -84,10 +84,9 @@ class UDPServer extends Server {
 
 class ServerTester{
   public static void main (String[] args) {
-    
-
     int tcpPort = 6060;
     int udpPort = 6061;
+
     if (args.length != 3) {
       System.out.println("ERROR: Provide 3 arguments");
       System.out.println("\t(1) <tcpPort>: the port number for TCP connection");
@@ -99,14 +98,17 @@ class ServerTester{
     tcpPort = Integer.parseInt(args[0]);
     udpPort = Integer.parseInt(args[1]);
     String fileName = args[2];
-    Server tcpServer = new TCPServer(tcpPort, fileName);
 
-    tcpServer.startServer();
-    // Will need to either spin these off as their own threads since the while loop in the 
-    // individual threads block the program or multiple "tester" instances to have both UDP and TCP runing
+    Inventory inventory = new Inventory(fileName);
+    inventory.readFile();
+    System.out.println(inventory.inventoryTable.toString());
+//    Server tcpServer = new TCPServer(tcpPort, fileName);
+//    tcpServer.startServer();
 
-    Server udpServer = new UDPServer(udpPort, fileName);
+//     Will need to either spin these off as their own threads since the while loop in the
+//     individual threads block the program or multiple "tester" instances to have both UDP and TCP runing
 
+    Server udpServer = new UDPServer(udpPort, inventory);
     udpServer.startServer();
 
   }
