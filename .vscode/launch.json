@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch Client$Tester",
+            "request": "launch",
+            "mainClass": "Client$Tester",
+            "projectName": "EE-382N-Distributed-Systems-Option-3_adbd6c11"
+        },
+        {
+            "type": "java",
             "name": "Launch ServerTester",
             "request": "launch",
             "mainClass": "ServerTester",

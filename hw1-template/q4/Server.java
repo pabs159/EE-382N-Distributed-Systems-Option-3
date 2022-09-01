@@ -103,9 +103,9 @@ class ServerTester{
     // Will need to either spin these off as their own threads since the while loop in the 
     // individual threads block the program or multiple "tester" instances to have both UDP and TCP runing
 
-    Server udpServer = new UDPServer(udpPort, fileName);
+    //Server udpServer = new UDPServer(udpPort, fileName);
 
-    udpServer.startServer();
+    //udpServer.startServer();
 
   }
 }

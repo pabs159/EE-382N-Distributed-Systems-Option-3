@@ -58,6 +58,7 @@ class TCPServerThread extends ServerThread {
 
     private void parseCommand(String command){
         this.currentCmd = command;
+        System.out.println("Command from client: " + command);
         getFile();
         this.serverRsp = "a response from the server";
     }

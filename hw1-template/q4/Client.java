@@ -9,37 +9,49 @@ public class Client {
 
   static String hostname = "127.0.0.1";
   static int port = 6060;
-  private static String tcpProtocol = "T";
-  private static String udpProtocol = "U"; 
+  private final String tcpProtocol = "T";
+  private final String udpProtocol = "U"; 
   private Socket sock;
   private String mode;
   private OutputStream output;
   private String cmdToSend;
+  private boolean TCPProtocol = true; // defualt
 
   public void connectToServerUDP() {
     int port = 6061;
     int len = 1000;
+    String[] tokens;
     String command;
     DatagramPacket packet;
     Scanner sc = new Scanner(System.in);
     do {
       System.out.println("UDP connection chosen, enter your command:");
       command = sc.nextLine();
+      tokens = command.split(" ");
       byte[] buffer = new byte[command.length()];
       try {
         DatagramSocket socket = new DatagramSocket();
         buffer = command.getBytes();
         packet = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost(), port);
         socket.send(packet);
+        if(tokens.length == 2){
+          if(tokens[1].toUpperCase().equals("T")){
+            // close the datagram socket and switch to TCP 
+            socket.close();
+            this.TCPProtocol = true;
+            return;
+          }
+        }
       } catch (IOException e) {
         System.err.println(e);
       }
-    }while(!command.equals("bye"));
+    } while(!command.equals("bye"));
   }
   
 
   public void connectToServerTCP() throws InterruptedException{
     String cmdStr;
+    String[] tokens;
     try (Socket socket = new Socket(hostname, port)) {
       this.sock = socket;
       this.output = this.sock.getOutputStream();
@@ -47,22 +59,25 @@ public class Client {
 
       Console console = System.console();
       do{
-      cmdStr = console.readLine("Enter a server command: ");
-      cmdToSend = getCommand(cmdStr);
-      // If getCommand() returns Error the users input was invalid 
-      if(cmdToSend.toUpperCase().equals("ERROR")){
-        System.out.println("Error invalid command to send to server!!");
-        continue;
-      }
-      writer.println(cmdToSend);
+        cmdStr = console.readLine("Enter a server command: ");
+        tokens = cmdStr.split(" ");
+        // Have the server handle malformed request 
+        writer.println(cmdStr);
 
-      InputStream input = this.sock.getInputStream();
-      BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-      String resp = reader.readLine();
-      // resp is the reply from the server
-      System.out.println(resp);
-
-      }while(!cmdStr.equals("bye"));
+        InputStream input = this.sock.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        String resp = reader.readLine();
+        // The reply from the server
+        System.out.println(resp);
+        if (tokens.length == 2){
+          if(tokens[1].toUpperCase().equals("U")){
+            //this.sock.close(); // close the socket and start UDP 
+            reader.close();
+            this.TCPProtocol = false;
+            return;
+          }
+        }
+      } while(!cmdStr.equals("bye"));
 
       this.sock.close();
     } catch (UnknownHostException ex) {
@@ -72,27 +87,52 @@ public class Client {
     }
   }
 
-  // Can be used by both protocols 
-  public String getCommand(String command){
-    if (command.equals("purchase")) {
-      // For now send a template 
-      return "purchase <username> <product-name> <quantity>";
-    } else if (command.equals("cancel")) {
-
-    } else if (command.equals("search")) {
-
-    } else if (command.equals("list")) {
-  
-    } else {
-      System.out.println("ERROR: No such command");
-      return "Error";
+  public void getMode(String[] t){
+    if (t[0].toUpperCase().equals("SETMODE") && t.length == 2) {
+      // setmode T|U
+      if (!(t[1].toUpperCase().equals("T") || t[1].toUpperCase().equals("U"))){
+        System.out.println("Error please specify: \"T\" or \"U\" ");
+      }
+      this.mode = t[1];
+      if (mode.toUpperCase().equals(tcpProtocol)){
+        try {
+          connectToServerTCP();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      } else if (mode.toUpperCase().equals(udpProtocol)){
+        connectToServerUDP();
+      }
+    } else{
+      System.out.println("Error please use < setmode T|U > to establish connection to server");
+      return;
     }
-    return "Error";
-
+    // now alternate on the established connection
+    toggleServerType();
   }
 
-  public void runClient(String hostname, int tcpPort, int udpPort){
+  public void toggleServerType(){
+    while(true){
+      if(this.TCPProtocol){
+        try {
+          connectToServerTCP();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+          break; // start over
+        }
+      } else{
+        try{
+          connectToServerUDP();
+        } catch (Exception ex) {
+          ex.printStackTrace();
+          break;
+        }
+      }
+    }
+  }
 
+
+  public void runClient(String hostname, int tcpPort, int udpPort){
     System.out.println("Enter command: ");
     try (Scanner sc = new Scanner(System.in)) {
       while(sc.hasNextLine()) {
@@ -102,45 +142,17 @@ public class Client {
           System.out.println("ERROR: Must supply a command");
           continue;
         }
-        // What if they only enter a token of length 0?      
-        
 
-        try {
-          if (tokens[0].equals("setmode") && tokens.length == 2) {
-            // setmode T|U
-            this.mode = tokens[1];
-            if (mode.toUpperCase().equals(tcpProtocol)){
-              connectToServerTCP();
-            }
-            else if (mode.toUpperCase().equals(udpProtocol)){
-              connectToServerUDP();
-            }
-          }
-        }
+        getMode(tokens);
 
-        catch (Exception e) {
-          System.out.println("Error: ");
-          e.printStackTrace();
-        }
+    }
 
-       
-      }
-      /* 
-    try {  
-      this.sock.close();
-      }
-      catch (SocketException ex){
-        System.out.println("Error closing socket ");
-        ex.printStackTrace();
-      }
-      catch (IOException ex){
-        System.out.println("Error closing socket ");
-        ex.printStackTrace();
-      }*/
+    } catch (Exception e){
+      System.out.println("Exception in parseCommand()");
+      e.printStackTrace();
     }
 
   }
-
 }
 
 
@@ -168,4 +180,19 @@ class Tester {
     
   }
 
-}
+}  
+
+
+
+      /* 
+    try {  
+      this.sock.close();
+      }
+      catch (SocketException ex){
+        System.out.println("Error closing socket ");
+        ex.printStackTrace();
+      }
+      catch (IOException ex){
+        System.out.println("Error closing socket ");
+        ex.printStackTrace();
+      }*/
