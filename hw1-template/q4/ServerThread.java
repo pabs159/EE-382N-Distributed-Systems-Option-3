@@ -112,20 +112,25 @@ class UDPServerThread extends ServerThread {
     private String parseCommand(String command){
         String[] splitStr = command.split(" ");
         String methodStr = splitStr[0];
+        System.out.println(methodStr);
 
         switch (methodStr) {
-            case "purchase" ->
-                    System.out.println("Purchasing for user __ product __ quantity __");
-            case "cancel" -> System.out.println("Cancel order with id of ____");
-            case "search" -> System.out.println("Searching all orders for user _____");
+            case "purchase" -> {
+                return this.inv.purchase(splitStr[1], splitStr[2], Integer.parseInt(splitStr[3]));
+            }
+            case "cancel" -> {
+                return inv.cancel(Integer.parseInt(splitStr[1]));
+            }
+            case "search" -> {
+                return this.inv.search(splitStr[1]);
+            }
             case "list" -> {
-                System.out.println("Listing available sorted products with their quantities");
                 return this.inv.list();
             }
-            default ->
-                    System.out.println("wut?");
+            default -> {
+                return "Invalid Command";
+            }
         }
-        return "";
     }
  
     public void run() {   
