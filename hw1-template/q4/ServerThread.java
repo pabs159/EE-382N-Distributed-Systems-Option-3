@@ -76,6 +76,10 @@ class TCPServerThread extends ServerThread {
                 parseCommand(currentCmd);
                 //String reverseText = new StringBuilder(text).reverse().toString();
                 writer.println("Server: " + this.serverRsp);
+                if(currentCmd == null){
+                    // client closed socket
+                    return;
+                }
             } while (!currentCmd.equals("bye"));
 
             System.out.println("Closing Server side socket!");
@@ -117,8 +121,9 @@ class UDPServerThread extends ServerThread {
     }
  
     public void run() {   
+        
         try {
-            String msg = "server udp reply";
+            String msg = "test";
             byte[] word = new byte[1024];
             byte[] r = new byte[msg.length()];
             r = msg.getBytes();

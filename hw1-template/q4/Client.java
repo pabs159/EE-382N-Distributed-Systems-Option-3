@@ -19,29 +19,38 @@ public class Client {
 
   public void connectToServerUDP() {
     int port = 6061;
-    int len = 1000;
+    int len = 1024;
     String[] tokens;
     String command;
     DatagramPacket packet;
+    String serverMsg; 
+    String r;
     Scanner sc = new Scanner(System.in);
     do {
       System.out.println("UDP connection chosen, enter your command:");
       command = sc.nextLine();
       tokens = command.split(" ");
-      byte[] buffer = new byte[command.length()];
+      byte[] buffer = new byte[len];
       try {
         DatagramSocket socket = new DatagramSocket();
         buffer = command.getBytes();
+        //packet = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost(), port);
         packet = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost(), port);
         socket.send(packet);
+        DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
+        r = new String(buffer);
+        // wait for reply
+        System.out.println("Reply from server: " + r);
         if(tokens.length == 2){
           if(tokens[1].toUpperCase().equals("T")){
             // close the datagram socket and switch to TCP 
-            socket.close();
+
+            socket.receive(reply);
             this.TCPProtocol = true;
             return;
           }
         }
+        socket.receive(reply);
       } catch (IOException e) {
         System.err.println(e);
       }
@@ -56,7 +65,7 @@ public class Client {
       this.sock = socket;
       this.output = this.sock.getOutputStream();
       PrintWriter writer = new PrintWriter(this.output, true);
-
+      
       Console console = System.console();
       do{
         cmdStr = console.readLine("Enter a server command: ");
@@ -66,17 +75,21 @@ public class Client {
 
         InputStream input = this.sock.getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-        String resp = reader.readLine();
-        // The reply from the server
-        System.out.println(resp);
         if (tokens.length == 2){
           if(tokens[1].toUpperCase().equals("U")){
             //this.sock.close(); // close the socket and start UDP 
+            String resp = reader.readLine();
+            System.out.println(resp);
             reader.close();
             this.TCPProtocol = false;
             return;
           }
         }
+        
+        String resp = reader.readLine();
+        // The reply from the server
+        System.out.println(resp);
+        
       } while(!cmdStr.equals("bye"));
 
       this.sock.close();

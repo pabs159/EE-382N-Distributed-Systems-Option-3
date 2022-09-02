@@ -44,8 +44,8 @@ class TCPServer extends Server {
       //while (true) {
           Socket socket = serverSocket.accept();
           System.out.println("New client connected");
-          TCPServerThread tcp1 = new TCPServerThread(super.inv, socket, null);
-          new Thread(tcp1).start();
+          TCPServerThread tcp = new TCPServerThread(super.inv, socket, null);
+          new Thread(tcp).start();
       //}
 
     } catch (IOException ex) {
@@ -69,8 +69,8 @@ class UDPServer extends Server {
     try{
       socket = new DatagramSocket(this.udpPort);
       System.out.println("UDP server started on port: " + this.udpPort);
-      UDPServerThread udp1 = new UDPServerThread(super.inv, null, socket);
-      new Thread(udp1).start();
+      UDPServerThread udp = new UDPServerThread(super.inv, null, socket);
+      new Thread(udp).start();
     }
     catch (Exception e) {
       System.out.println("Error: " + e.getMessage());
@@ -97,16 +97,16 @@ class ServerTester{
     udpPort = Integer.parseInt(args[1]);
     String fileName = args[2];
 
+    // Per the assignment only implement one at a time not both
+    while(true){
     Server tcpServer = new TCPServer(tcpPort, fileName);
 
     tcpServer.startServer();
-    // Will need to either spin these off as their own threads since the while loop in the 
-    // individual threads block the program or multiple "tester" instances to have both UDP and TCP runing
+    
+    Server udpServer = new UDPServer(udpPort, fileName);
 
-    //Server udpServer = new UDPServer(udpPort, fileName);
-
-    //udpServer.startServer();
-
+    udpServer.startServer();
+    }
   }
 }
 
