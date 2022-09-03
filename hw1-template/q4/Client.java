@@ -32,13 +32,16 @@ public class Client {
       command = sc.nextLine();
       tokens = command.split(" ");
       byte[] buffer = new byte[len];
+      byte[] recvBuffer = new byte[len];
       try {
         DatagramSocket socket = new DatagramSocket();
         buffer = command.getBytes();
         //packet = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost(), port);
+        System.out.println(buffer.length);
         packet = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost(), port);
         socket.send(packet);
-        DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
+
+        DatagramPacket reply = new DatagramPacket(recvBuffer, recvBuffer.length);
         // wait for reply
         
         if(tokens.length == 2){
@@ -51,8 +54,8 @@ public class Client {
           }
         }
         socket.receive(reply);
-        r = new String(buffer);
-        System.out.println("Reply from server: " + r);
+        r = new String(recvBuffer);
+        System.out.println(r);
       } catch (IOException e) {
         System.err.println(e);
       }
