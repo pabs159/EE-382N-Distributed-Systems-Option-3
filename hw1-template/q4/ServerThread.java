@@ -1,6 +1,8 @@
 import java.io.*;
 import java.net.*;
- 
+import java.lang.*;
+import org.apache.commons.text.StringEscapeUtils;
+
 /*
  * This thread is responsible to handle client connection.
  */
@@ -12,28 +14,21 @@ public class ServerThread implements Runnable{
 
     Inventory inv; // holds all things inventory related including r/w  
     public ServerThread(Inventory i, Socket socket, DatagramSocket dsSocket) {
-        this.inv = i;
         this.socket = socket;
         this.dsSocket = dsSocket;
+        this.inv = i;
     }
 
-    private void getFile(){
-        System.out.println(this.inv.inventoryTable);
-        this.inv.readFile();
-        this.inv.inventoryTable.put("phone", 5);
+    public void getFile(){
         System.out.println(this.inv.inventoryTable);
     }
 
     private void parseCommand(String command){
-        this.currentCmd = command;
-        getFile();
-        this.serverRsp = "a response from the server";
     }
  
     public void run() {
     }
 }
-
 class TCPServerThread extends ServerThread {
     private Socket socket;
     private String currentCmd;
@@ -47,37 +42,67 @@ class TCPServerThread extends ServerThread {
         super(i, socket, dsSocket);
         this.inv = i;
         this.socket = socket;
+        System.out.println(super.inv.inventoryTable);
     }
 
-    private void getFile(){
-        System.out.println(this.inv.inventoryTable);
-        this.inv.readFile();
-        this.inv.inventoryTable.put("phone", 5);
+    public void getFile(){
+        //this.inv = super.inv;
+        //return super.inv;
         System.out.println(this.inv.inventoryTable);
     }
 
-    private void parseCommand(String command){
-        this.currentCmd = command;
-        System.out.println("Command from client: " + command);
-        getFile();
-        this.serverRsp = "a response from the server";
+    private String parseCommand(String command){
+        if(command.equals(" ")){
+            return "Not a valid command!";
+        }
+        System.out.println(this.inv.inventoryTable);
+        String[] splitStr = command.split(" ");
+        String methodStr = splitStr[0];
+        System.out.println("Method string: " + methodStr);
+        if(splitStr.length > 2){
+            if(splitStr[1].toUpperCase().equals("U")){
+                return "closing connection";
+            }
+        }
+        System.out.println(methodStr);
+
+        switch (methodStr) {
+            case "purchase" -> {
+                return this.inv.purchase(splitStr[1], splitStr[2], Integer.parseInt(splitStr[3]));
+            }
+            case "cancel" -> {
+                return this.inv.cancel(Integer.parseInt(splitStr[1]));
+            }
+            case "search" -> {
+                return this.inv.search(splitStr[1]);
+            }
+            case "list" -> {
+                return this.inv.list();
+            }
+            default -> {
+                return "Invalid Command";
+            }
+        }
+    
     }
  
     public void run() {   
+        String n = null;
         try {
             InputStream input = this.socket.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
- 
             OutputStream output = this.socket.getOutputStream();
-            PrintWriter writer = new PrintWriter(output, true);
- 
+
             do {
+                
+                BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                PrintWriter writer = new PrintWriter(output, true);
                 currentCmd = reader.readLine();
-                parseCommand(currentCmd);
-                //String reverseText = new StringBuilder(text).reverse().toString();
-                writer.println("Server: " + this.serverRsp);
-                if(currentCmd == null){
+                this.serverRsp = parseCommand(currentCmd) + Character.toString((char) 0) ;
+                System.out.println(StringEscapeUtils.escapeJava(this.serverRsp));
+                writer.println(this.serverRsp);
+                if(currentCmd == null || currentCmd.equals("setmode u")){
                     // client closed socket
+                    System.out.println("Client closed socket!");
                     return;
                 }
             } while (!currentCmd.equals("bye"));
@@ -107,44 +132,68 @@ class UDPServerThread extends ServerThread {
         this.dsSocket = dsSocket;
     }
 
-    private void getFile(){
-        System.out.println(this.inv.inventoryTable);
-        this.inv.readFile();
-        this.inv.inventoryTable.put("phone", 5);
+    public void getFile(){
         System.out.println(this.inv.inventoryTable);
     }
 
-    private void parseCommand(String command){
-        this.currentCmd = command;
-        getFile();
-        this.serverRsp = "a response from the server";
+
+    private String parseCommand(String command){
+        if(command.equals(" ")){
+            return "Not a valid command!";
+        }
+        System.out.println(this.inv.inventoryTable);
+        String[] splitStr = command.split(" ");
+        String methodStr = splitStr[0].replace("\u0000", "");
+        System.out.println(StringEscapeUtils.escapeJava(methodStr));
+        System.out.println("Method string: " + methodStr);
+
+        switch (methodStr) {
+            case "purchase" -> {
+                return this.inv.purchase(splitStr[1], splitStr[2], Integer.parseInt(splitStr[3]));
+            }
+            case "cancel" -> {
+                return this.inv.cancel(Integer.parseInt(splitStr[1]));
+            }
+            case "search" -> {
+                return this.inv.search(splitStr[1]);
+            }
+            case "list" -> {
+                return this.inv.list();
+            }
+            default -> {
+                return "Invalid Command";
+            }
+        }
     }
  
     public void run() {   
-        
+        String clientMsg;
+        String str;
         try {
-            String msg = "test";
-            byte[] word = new byte[1024];
-            byte[] r = new byte[msg.length()];
-            r = msg.getBytes();
+
+            byte[] word = new byte[256];
+            byte[] r = new byte[256];
             do{
                 // Get client request
                 DatagramPacket request = new DatagramPacket(word, word.length);
-                msg = new String(word);
-                System.out.println(word.length);
-                System.out.println("msg from udp client: " + msg);
                 this.dsSocket.receive(request);
+                clientMsg = new String(request.getData());
+                System.out.println(StringEscapeUtils.escapeJava("Client Msg: " + clientMsg));
                 //String str = "reply from UDP server";
-                
+                str = parseCommand(clientMsg) + Character.toString((char) 0);
+                r = str.getBytes();
+                System.out.println(StringEscapeUtils.escapeJava(str));
+                System.out.println(r.length);
                 // Put reply into packet, send packet to client
                 DatagramPacket reply = new DatagramPacket(r, r.length, request.getAddress(), request.getPort());
                 this.dsSocket.send(reply);
-            }while(msg != "bye");
+            }while(clientMsg != "bye");
 
         } catch (IOException ex) {
             System.out.println("Server exception: " + ex.getMessage());
             ex.printStackTrace();
         } finally {
+            System.out.println("Closing UDP socket");
             this.dsSocket.close();
         }  
     }

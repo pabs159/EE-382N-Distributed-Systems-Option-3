@@ -10,9 +10,8 @@ public class Server {
   Inventory inv;
 
   // Constructor 
-  public Server(int port, String filePath){
-    //inv = new Inventory(filePath);
-    this.inv = new Inventory(filePath);
+  public Server(Inventory i, int port, String filePath){
+    this.inv = i;
   }
 
   public void run(){
@@ -28,11 +27,12 @@ public class Server {
 
 class TCPServer extends Server {
   public int tcpPort;
+  Inventory inv;
   
-  public TCPServer(int tcpPort, String filePath) {
-    super(tcpPort, filePath);
+  public TCPServer(Inventory i, int tcpPort, String filePath) {
+    super(i, tcpPort, filePath);
     this.tcpPort = tcpPort;
-    
+    this.inv = i;
   }
 
   public void startServer(){
@@ -44,7 +44,7 @@ class TCPServer extends Server {
       //while (true) {
           Socket socket = serverSocket.accept();
           System.out.println("New client connected");
-          TCPServerThread tcp = new TCPServerThread(super.inv, socket, null);
+          TCPServerThread tcp = new TCPServerThread(this.inv, socket, null);
           new Thread(tcp).start();
       //}
 
@@ -57,10 +57,11 @@ class TCPServer extends Server {
 
 class UDPServer extends Server {
   public int udpPort;
-
-  public UDPServer(int udpPort, String filePath) {
-    super(udpPort, filePath);
+  Inventory inv;
+  public UDPServer(Inventory i, int udpPort, String filePath) {
+    super(i, udpPort, filePath);
     this.udpPort = udpPort;
+    this.inv = i;
   
   }
 
@@ -69,7 +70,7 @@ class UDPServer extends Server {
     try{
       socket = new DatagramSocket(this.udpPort);
       System.out.println("UDP server started on port: " + this.udpPort);
-      UDPServerThread udp = new UDPServerThread(super.inv, null, socket);
+      UDPServerThread udp = new UDPServerThread(this.inv, null, socket);
       new Thread(udp).start();
     }
     catch (Exception e) {
@@ -97,15 +98,23 @@ class ServerTester{
     udpPort = Integer.parseInt(args[1]);
     String fileName = args[2];
 
+    Inventory inv = new Inventory(fileName);
+
+    inv.readFile();
+    System.out.println(inv.inventoryTable);
+
+
+    Server tcpServerinit = new TCPServer(inv, tcpPort, fileName);
+
+    tcpServerinit.startServer();
     // Per the assignment only implement one at a time not both
     while(true){
-    Server tcpServer = new TCPServer(tcpPort, fileName);
+      Server udpServer = new UDPServer(inv, udpPort, fileName);
 
-    tcpServer.startServer();
-    
-    Server udpServer = new UDPServer(udpPort, fileName);
-
-    udpServer.startServer();
+      udpServer.startServer();
+      Server tcpServer = new TCPServer(inv, tcpPort, fileName);
+      System.out.println("SERVER");
+      tcpServer.startServer();
     }
   }
 }

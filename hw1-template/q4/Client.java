@@ -3,6 +3,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.*;
 import java.io.*;
 import java.net.*;
+import org.apache.commons.text.StringEscapeUtils;
 
 
 public class Client {
@@ -19,7 +20,7 @@ public class Client {
 
   public void connectToServerUDP() {
     int port = 6061;
-    int len = 1024;
+    int len = 256;
     String[] tokens;
     String command;
     DatagramPacket packet;
@@ -38,9 +39,8 @@ public class Client {
         packet = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost(), port);
         socket.send(packet);
         DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
-        r = new String(buffer);
         // wait for reply
-        System.out.println("Reply from server: " + r);
+        
         if(tokens.length == 2){
           if(tokens[1].toUpperCase().equals("T")){
             // close the datagram socket and switch to TCP 
@@ -51,6 +51,8 @@ public class Client {
           }
         }
         socket.receive(reply);
+        r = new String(buffer);
+        System.out.println("Reply from server: " + r);
       } catch (IOException e) {
         System.err.println(e);
       }
@@ -61,6 +63,8 @@ public class Client {
   public void connectToServerTCP() throws InterruptedException{
     String cmdStr;
     String[] tokens;
+    Scanner serverReader;
+
     try (Socket socket = new Socket(hostname, port)) {
       this.sock = socket;
       this.output = this.sock.getOutputStream();
@@ -74,24 +78,43 @@ public class Client {
         writer.println(cmdStr);
 
         InputStream input = this.sock.getInputStream();
+        //BufferedReader reader = new BufferedReader(new InputStreamReader(input));
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        String str;
+        StringBuilder reply = new StringBuilder();
+        int val;
+        //serverReader = new Scanner(input);
         if (tokens.length == 2){
           if(tokens[1].toUpperCase().equals("U")){
-            //this.sock.close(); // close the socket and start UDP 
-            String resp = reader.readLine();
-            System.out.println(resp);
-            reader.close();
             this.TCPProtocol = false;
+            while ((val = reader.read()) != 0){
+              reply.append((char)val);
+            }
+            System.out.println(reply);
+            this.sock.close();
+            reader.close();
             return;
           }
         }
-        
-        String resp = reader.readLine();
+        while ((val = reader.read()) != 0){
+          reply.append((char)val);
+          
+        }
+        System.out.println(reply);
+        /* 
+        System.out.println(StringEscapeUtils.escapeJava(System.getProperty("line.separator")));
+        while(serverReader.hasNextLine()){
+          System.out.println(serverReader.hasNext(" "));
+          System.out.println(serverReader.hasNextLine());
+          str = serverReader.nextLine();
+          System.out.println(str);
+        }
+        */
+        //String resp = reader.readLine();
         // The reply from the server
-        System.out.println(resp);
         
       } while(!cmdStr.equals("bye"));
-
+      //serverReader.close();
       this.sock.close();
     } catch (UnknownHostException ex) {
         System.out.println("Server not found: " + ex.getMessage());
@@ -108,12 +131,14 @@ public class Client {
       }
       this.mode = t[1];
       if (mode.toUpperCase().equals(tcpProtocol)){
+        System.out.println("TCP Selected");
         try {
           connectToServerTCP();
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
       } else if (mode.toUpperCase().equals(udpProtocol)){
+        System.out.println("UDP selected");
         connectToServerUDP();
       }
     } else{
