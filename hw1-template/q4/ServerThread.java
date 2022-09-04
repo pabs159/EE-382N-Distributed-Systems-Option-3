@@ -143,14 +143,14 @@ class UDPServerThread extends ServerThread {
         if(command.equals(" ")){
             return "Not a valid command!";
         }
-        System.out.println(this.inv.inventoryTable);
+        System.out.println(StringEscapeUtils.escapeJava(command));
         String[] splitStr = command.split(" ");
         String methodStr = splitStr[0].replace("\u0000", "");
         System.out.println(StringEscapeUtils.escapeJava(methodStr));
 
         switch (methodStr) {
             case "purchase" -> {
-                return this.inv.purchase(splitStr[1], splitStr[2], Integer.parseInt(splitStr[3]));
+                return this.inv.purchase(splitStr[1], splitStr[2], Integer.parseInt(splitStr[3].replace("\u0000", "")));
             }
             case "cancel" -> {
                 return this.inv.cancel(Integer.parseInt(splitStr[1]));

@@ -16,7 +16,6 @@ public class Server implements Runnable {
 
 class TCPServer extends Server {
   public int tcpPort;
-  private Boolean runTcp = true;
   Inventory inv;
 
   public TCPServer(Inventory i, int tcpPort, String filePath) {
@@ -26,19 +25,15 @@ class TCPServer extends Server {
   }
 
   public void run() {
-    System.out.println("Inside start server");
     try (ServerSocket serverSocket = new ServerSocket(this.tcpPort)) {
-
       System.out.println("TCP Server is listening on port " + tcpPort);
 
-      do {
-        System.out.println("HERE");
+      while(true) {
         Socket socket = serverSocket.accept();
         System.out.println("New client connected");
         TCPServerThread tcp = new TCPServerThread(this.inv, socket, null);
         new Thread(tcp).start();
-        System.out.println("run TCP: " + tcp.runTcp);
-      } while (runTcp);
+      }
 
     } catch (IOException ex) {
       System.out.println("Server exception: " + ex.getMessage());
@@ -50,6 +45,7 @@ class TCPServer extends Server {
 class UDPServer extends Server {
   public int udpPort;
   Inventory inv;
+  DatagramSocket socket;
 
   public UDPServer(Inventory i, int udpPort, String filePath) {
     super(i, udpPort, filePath);
@@ -59,16 +55,15 @@ class UDPServer extends Server {
   }
 
   public void run() {
-    DatagramSocket socket = null;
     try {
-      while (true) {
-        socket = new DatagramSocket(this.udpPort);
-        System.out.println("UDP server started on port: " + this.udpPort);
-        UDPServerThread udp = new UDPServerThread(this.inv, null, socket);
-        new Thread(udp).start();
-      }
-    } catch (Exception e) {
-      System.out.println("Error: " + e.getMessage());
+      System.out.println("UDP server started on port: " + this.udpPort);
+      socket = new DatagramSocket(this.udpPort);
+      UDPServerThread udp = new UDPServerThread(this.inv, null, socket);
+      new Thread(udp).start();
+
+    } catch (IOException e) {
+      System.out.println("ERROR: " + e.getMessage());
+      e.printStackTrace();
     }
   }
 }
@@ -91,13 +86,16 @@ class ServerTester {
     String fileName = args[2];
 
     Inventory inv = new Inventory(fileName);
-
     inv.readFile();
     System.out.println(inv.inventoryTable);
+
 
     Server tcpServer = new TCPServer(inv, tcpPort, fileName);
     new Thread(tcpServer).start();
     Server udpServer = new UDPServer(inv, udpPort, fileName);
     new Thread(udpServer).start();
+
+
+
   }
 }

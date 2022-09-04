@@ -16,7 +16,7 @@
             "name": "Launch ServerTester",
             "request": "launch",
             "mainClass": "ServerTester",
-            "args": "6060 6062 '${cwd}/hw1-template/q4/input/inventory.txt'",
+            "args": "6060 6061 '${cwd}/hw1-template/q4/input/inventory.txt'",
             "projectName": "EE-382N-Distributed-Systems-Option-3_adbd6c11"
         },
         {
@@ -27,21 +27,5 @@
             "args": "127.0.0.1 6060 6061",
             "projectName": "EE-382N-Distributed-Systems-Option-3_adbd6c11"
         },
-        {
-            "type": "java",
-            "name": "Launch Client",
-            "request": "launch",
-            "mainClass": "Client",
-            "args": "127.0.0.1 6060 6061",
-            "projectName": "EE-382N-Distributed-Systems-Option-3_adbd6c11"
-        },
-        {
-            "type": "java",
-            "name": "Launch Server",
-            "request": "launch",
-            "mainClass": "Server",
-            "args": "6060 6061 '${cwd}/hw1-template/q4/input/inventory.txt'",
-            "projectName": "EE-382N-Distributed-Systems-Option-3_adbd6c11"
-        }
     ]
 }
