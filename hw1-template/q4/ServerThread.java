@@ -1,6 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.lang.*;
 import org.apache.commons.text.StringEscapeUtils;
 
 /*
@@ -8,7 +7,6 @@ import org.apache.commons.text.StringEscapeUtils;
  */
 public class ServerThread implements Runnable{
     private Socket socket;
-    private String currentCmd;
     public String serverRsp;
     private DatagramSocket dsSocket;
 
@@ -20,7 +18,6 @@ public class ServerThread implements Runnable{
     }
 
     public void getFile(){
-        System.out.println(this.inv.inventoryTable);
     }
 
     private void parseCommand(String command){
@@ -34,6 +31,9 @@ class TCPServerThread extends ServerThread {
     private String currentCmd;
     public String serverRsp;
     public String protocol;
+    public Boolean runTcp = true;
+    private boolean exit;
+
 
     Inventory inv; // holds all things inventory related including r/w 
 
@@ -46,8 +46,6 @@ class TCPServerThread extends ServerThread {
     }
 
     public void getFile(){
-        //this.inv = super.inv;
-        //return super.inv;
         System.out.println(this.inv.inventoryTable);
     }
 
@@ -55,11 +53,11 @@ class TCPServerThread extends ServerThread {
         if(command.equals(" ")){
             return "Not a valid command!";
         }
-        System.out.println(this.inv.inventoryTable);
         String[] splitStr = command.split(" ");
         String methodStr = splitStr[0];
         System.out.println("Method string: " + methodStr);
-        if(splitStr.length > 2){
+        if(splitStr.length > 1){
+            System.out.println("Inside");
             if(splitStr[1].toUpperCase().equals("U")){
                 return "closing connection";
             }
@@ -87,7 +85,6 @@ class TCPServerThread extends ServerThread {
     }
  
     public void run() {   
-        String n = null;
         try {
             InputStream input = this.socket.getInputStream();
             OutputStream output = this.socket.getOutputStream();
@@ -98,12 +95,14 @@ class TCPServerThread extends ServerThread {
                 PrintWriter writer = new PrintWriter(output, true);
                 currentCmd = reader.readLine();
                 this.serverRsp = parseCommand(currentCmd) + Character.toString((char) 0) ;
-                System.out.println(StringEscapeUtils.escapeJava(this.serverRsp));
                 writer.println(this.serverRsp);
                 if(currentCmd == null || currentCmd.equals("setmode u")){
                     // client closed socket
                     System.out.println("Client closed socket!");
-                    return;
+                    this.runTcp = false;
+                    reader.close();
+                    writer.close();
+                    currentCmd = "bye";
                 }
             } while (!currentCmd.equals("bye"));
 
@@ -114,12 +113,15 @@ class TCPServerThread extends ServerThread {
             ex.printStackTrace();
         }  
     }
+
+    public void stop() {
+        exit = true;
+    }
 }
 
 
 class UDPServerThread extends ServerThread {
     private DatagramSocket dsSocket;
-    private String currentCmd;
     public String serverRsp;
     public String protocol;
 
@@ -145,7 +147,6 @@ class UDPServerThread extends ServerThread {
         String[] splitStr = command.split(" ");
         String methodStr = splitStr[0].replace("\u0000", "");
         System.out.println(StringEscapeUtils.escapeJava(methodStr));
-        System.out.println("Method string: " + methodStr);
 
         switch (methodStr) {
             case "purchase" -> {
@@ -178,12 +179,9 @@ class UDPServerThread extends ServerThread {
                 DatagramPacket request = new DatagramPacket(word, word.length);
                 this.dsSocket.receive(request);
                 clientMsg = new String(request.getData());
-                System.out.println(StringEscapeUtils.escapeJava("Client Msg: " + clientMsg));
                 //String str = "reply from UDP server";
                 str = parseCommand(clientMsg) + Character.toString((char) 0);
                 r = str.getBytes();
-                System.out.println(StringEscapeUtils.escapeJava(str));
-                System.out.println(r.length);
                 // Put reply into packet, send packet to client
                 DatagramPacket reply = new DatagramPacket(r, r.length, request.getAddress(), request.getPort());
                 this.dsSocket.send(reply);

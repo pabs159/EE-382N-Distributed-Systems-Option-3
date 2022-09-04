@@ -1,56 +1,48 @@
-//import java.io.File;
-//import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.*;
-//import java.util.Hashtable;
-//import java.util.Scanner;
 
-public class Server {
-  // Create inventory object 
-  Inventory inv;
+public class Server implements Runnable {
 
-  // Constructor 
-  public Server(Inventory i, int port, String filePath){
-    this.inv = i;
+  // Constructor
+  public Server(Inventory i, int port, String filePath) {
   }
 
-  public void run(){
+  public void run() {
   }
 
   public void startServer() {
-  }
-
-  private void parseCommand(){
-    // ToDo
   }
 }
 
 class TCPServer extends Server {
   public int tcpPort;
+  private Boolean runTcp = true;
   Inventory inv;
-  
+
   public TCPServer(Inventory i, int tcpPort, String filePath) {
     super(i, tcpPort, filePath);
     this.tcpPort = tcpPort;
     this.inv = i;
   }
 
-  public void startServer(){
+  public void run() {
     System.out.println("Inside start server");
     try (ServerSocket serverSocket = new ServerSocket(this.tcpPort)) {
-  
+
       System.out.println("TCP Server is listening on port " + tcpPort);
 
-      //while (true) {
-          Socket socket = serverSocket.accept();
-          System.out.println("New client connected");
-          TCPServerThread tcp = new TCPServerThread(this.inv, socket, null);
-          new Thread(tcp).start();
-      //}
+      do {
+        System.out.println("HERE");
+        Socket socket = serverSocket.accept();
+        System.out.println("New client connected");
+        TCPServerThread tcp = new TCPServerThread(this.inv, socket, null);
+        new Thread(tcp).start();
+        System.out.println("run TCP: " + tcp.runTcp);
+      } while (runTcp);
 
     } catch (IOException ex) {
-        System.out.println("Server exception: " + ex.getMessage());
-        ex.printStackTrace();
+      System.out.println("Server exception: " + ex.getMessage());
+      ex.printStackTrace();
     }
   }
 }
@@ -58,31 +50,31 @@ class TCPServer extends Server {
 class UDPServer extends Server {
   public int udpPort;
   Inventory inv;
+
   public UDPServer(Inventory i, int udpPort, String filePath) {
     super(i, udpPort, filePath);
     this.udpPort = udpPort;
     this.inv = i;
-  
+
   }
 
-  public void startServer(){
+  public void run() {
     DatagramSocket socket = null;
-    try{
-      socket = new DatagramSocket(this.udpPort);
-      System.out.println("UDP server started on port: " + this.udpPort);
-      UDPServerThread udp = new UDPServerThread(this.inv, null, socket);
-      new Thread(udp).start();
-    }
-    catch (Exception e) {
+    try {
+      while (true) {
+        socket = new DatagramSocket(this.udpPort);
+        System.out.println("UDP server started on port: " + this.udpPort);
+        UDPServerThread udp = new UDPServerThread(this.inv, null, socket);
+        new Thread(udp).start();
+      }
+    } catch (Exception e) {
       System.out.println("Error: " + e.getMessage());
     }
   }
 }
 
-
-class ServerTester{
-  public static void main (String[] args) {
-    
+class ServerTester {
+  public static void main(String[] args) {
 
     int tcpPort = 6060;
     int udpPort = 6061;
@@ -103,20 +95,9 @@ class ServerTester{
     inv.readFile();
     System.out.println(inv.inventoryTable);
 
-
-    Server tcpServerinit = new TCPServer(inv, tcpPort, fileName);
-
-    tcpServerinit.startServer();
-    // Per the assignment only implement one at a time not both
-    while(true){
-      Server udpServer = new UDPServer(inv, udpPort, fileName);
-
-      udpServer.startServer();
-      Server tcpServer = new TCPServer(inv, tcpPort, fileName);
-      System.out.println("SERVER");
-      tcpServer.startServer();
-    }
+    Server tcpServer = new TCPServer(inv, tcpPort, fileName);
+    new Thread(tcpServer).start();
+    Server udpServer = new UDPServer(inv, udpPort, fileName);
+    new Thread(udpServer).start();
   }
 }
-
-
