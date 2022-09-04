@@ -31,8 +31,6 @@ public class Client {
 
         buffer = command.getBytes();
         // packet = new DatagramPacket(buffer, buffer.length,
-        // InetAddress.getLocalHost(), port);
-        System.out.println(buffer.length);
         packet = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost(), port);
         udpSocket.send(packet);
 
@@ -44,6 +42,7 @@ public class Client {
             // close the datagram socket and switch to TCP
             udpSocket.receive(reply);
             udpSocket.close();
+            sc.close();
             this.TCPProtocol = true;
             return;
           }
@@ -78,7 +77,6 @@ public class Client {
         writer.println(cmdStr);
 
         InputStream input = this.sock.getInputStream();
-        // BufferedReader reader = new BufferedReader(new InputStreamReader(input));
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
         StringBuilder reply = new StringBuilder();
         int val;
@@ -92,6 +90,7 @@ public class Client {
             System.out.println(reply);
             this.sock.close();
             reader.close();
+            //console.flush();
             return;
           }
         }

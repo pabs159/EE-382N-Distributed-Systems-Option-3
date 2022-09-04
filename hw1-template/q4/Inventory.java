@@ -34,6 +34,7 @@ public class Inventory {
 
     public String search(String userName) {
         ArrayList<Order> userOrders = new ArrayList<Order>();
+        
         for (Order order : orders) {
             if (order.userName.equals(userName)) {
                 userOrders.add(order);

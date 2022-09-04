@@ -143,7 +143,7 @@ class UDPServerThread extends ServerThread {
         if(command.equals(" ")){
             return "Not a valid command!";
         }
-        System.out.println(StringEscapeUtils.escapeJava(command));
+        System.out.println(command);
         String[] splitStr = command.split(" ");
         String methodStr = splitStr[0].replace("\u0000", "");
         System.out.println(StringEscapeUtils.escapeJava(methodStr));
@@ -153,10 +153,11 @@ class UDPServerThread extends ServerThread {
                 return this.inv.purchase(splitStr[1], splitStr[2], Integer.parseInt(splitStr[3].replace("\u0000", "")));
             }
             case "cancel" -> {
-                return this.inv.cancel(Integer.parseInt(splitStr[1]));
+                return this.inv.cancel(Integer.parseInt(splitStr[1].replace("\u0000", "")));
             }
             case "search" -> {
-                return this.inv.search(splitStr[1]);
+                String user = splitStr[1].replace("\u0000", "");
+                return this.inv.search(user);
             }
             case "list" -> {
                 return this.inv.list();
@@ -172,9 +173,11 @@ class UDPServerThread extends ServerThread {
         String str;
         try {
 
-            byte[] word = new byte[256];
-            byte[] r = new byte[256];
+
             do{
+                // Creat byte arrays on every pass to "flush" the old input
+                byte[] word = new byte[256];
+                byte[] r = new byte[256];
                 // Get client request
                 DatagramPacket request = new DatagramPacket(word, word.length);
                 this.dsSocket.receive(request);
@@ -185,6 +188,8 @@ class UDPServerThread extends ServerThread {
                 // Put reply into packet, send packet to client
                 DatagramPacket reply = new DatagramPacket(r, r.length, request.getAddress(), request.getPort());
                 this.dsSocket.send(reply);
+                // Run the garage collector to keep things clean
+                System.gc();
             }while(clientMsg != "bye");
 
         } catch (IOException ex) {
