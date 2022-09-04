@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.*;
-import org.apache.commons.text.StringEscapeUtils;
+
+//import org.apache.commons.text.StringEscapeUtils;
 
 /*
  * This thread is responsible to handle client connection.
@@ -93,7 +94,7 @@ class TCPServerThread extends ServerThread {
                 
                 BufferedReader reader = new BufferedReader(new InputStreamReader(input));
                 PrintWriter writer = new PrintWriter(output, true);
-                currentCmd = reader.readLine();
+                currentCmd = reader.readLine(); // what if current command is null??
                 this.serverRsp = parseCommand(currentCmd) + Character.toString((char) 0) ;
                 writer.println(this.serverRsp);
                 if(currentCmd == null || currentCmd.equals("setmode u")){
@@ -146,7 +147,7 @@ class UDPServerThread extends ServerThread {
         System.out.println(command);
         String[] splitStr = command.split(" ");
         String methodStr = splitStr[0].replace("\u0000", "");
-        System.out.println(StringEscapeUtils.escapeJava(methodStr));
+        //System.out.println(StringEscapeUtils.escapeJava(methodStr));
 
         switch (methodStr) {
             case "purchase" -> {

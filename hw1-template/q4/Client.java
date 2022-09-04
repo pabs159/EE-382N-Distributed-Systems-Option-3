@@ -42,7 +42,7 @@ public class Client {
             // close the datagram socket and switch to TCP
             udpSocket.receive(reply);
             udpSocket.close();
-            sc.close();
+            //sc.close();
             this.TCPProtocol = true;
             return;
           }
@@ -63,15 +63,22 @@ public class Client {
     String cmdStr;
     String[] tokens;
     int port = 6060;
+    Scanner sc = new Scanner(System.in);
+    //Console console = System.console();
 
     try (Socket socket = new Socket(hostname, port)) {
       this.sock = socket;
       this.output = this.sock.getOutputStream();
       PrintWriter writer = new PrintWriter(this.output, true);
 
-      Console console = System.console();
+      
       do {
-        cmdStr = console.readLine("Enter a server command: ");
+        System.out.println("Enter a server command: ");
+        /*if (!sc.hasNextLine()){
+           System.out.println("NO LINE");
+        }*/
+        cmdStr = sc.nextLine();
+        //cmdStr = console.readLine("Enter a server command: ");
         tokens = cmdStr.split(" ");
         // Have the server handle malformed request
         writer.println(cmdStr);
@@ -171,7 +178,7 @@ public class Client {
       }
 
     } catch (Exception e) {
-      System.out.println("Exception in parseCommand()");
+      System.out.println("Exception: ");
       e.printStackTrace();
     }
 
@@ -203,17 +210,3 @@ class Tester {
   }
 
 }
-
-/*
- * try {
- * this.sock.close();
- * }
- * catch (SocketException ex){
- * System.out.println("Error closing socket ");
- * ex.printStackTrace();
- * }
- * catch (IOException ex){
- * System.out.println("Error closing socket ");
- * ex.printStackTrace();
- * }
- */
