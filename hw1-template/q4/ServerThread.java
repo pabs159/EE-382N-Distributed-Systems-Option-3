@@ -7,22 +7,22 @@ import java.net.*;
  * This thread is responsible to handle client connection.
  */
 public class ServerThread implements Runnable{
-    private Socket socket;
+    //private Socket socket;
     public String serverRsp;
-    private DatagramSocket dsSocket;
+    //private DatagramSocket dsSocket;
 
     Inventory inv; // holds all things inventory related including r/w  
     public ServerThread(Inventory i, Socket socket, DatagramSocket dsSocket) {
-        this.socket = socket;
-        this.dsSocket = dsSocket;
+        //this.socket = socket;
+        //this.dsSocket = dsSocket;
         this.inv = i;
     }
 
     public void getFile(){
     }
 
-    private void parseCommand(String command){
-    }
+    //private void parseCommand(String command){
+    //}
  
     public void run() {
     }
@@ -33,12 +33,9 @@ class TCPServerThread extends ServerThread {
     public String serverRsp;
     public String protocol;
     public Boolean runTcp = true;
-    private boolean exit;
-
 
     Inventory inv; // holds all things inventory related including r/w 
 
-   
     public TCPServerThread(Inventory i, Socket socket, DatagramSocket dsSocket) {
         super(i, socket, dsSocket);
         this.inv = i;
@@ -115,9 +112,6 @@ class TCPServerThread extends ServerThread {
         }  
     }
 
-    public void stop() {
-        exit = true;
-    }
 }
 
 
@@ -127,7 +121,6 @@ class UDPServerThread extends ServerThread {
     public String protocol;
 
     Inventory inv; // holds all things inventory related including r/w 
-
    
     public UDPServerThread(Inventory i, Socket socket, DatagramSocket dsSocket) {
         super(i, socket, dsSocket);

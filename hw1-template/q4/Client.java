@@ -97,7 +97,6 @@ public class Client {
             System.out.println(reply);
             this.sock.close();
             reader.close();
-            //console.flush();
             return;
           }
         }
@@ -109,6 +108,7 @@ public class Client {
       } while (!cmdStr.equals("bye"));
       // serverReader.close();
       this.sock.close();
+      sc.close(); 
     } catch (UnknownHostException ex) {
       System.out.println("Server not found: " + ex.getMessage());
     } catch (IOException ex) {
@@ -162,7 +162,11 @@ public class Client {
     }
   }
 
-  public void runClient(String hostname, int tcpPort, int udpPort) {
+  public void runClient(String hostname, int tcpPort, int udpPort, boolean tcpDefault) {
+    if (tcpDefault){  
+      String[] a = new String[] {"setmode", "T"};
+      getMode(a);
+    }
     System.out.println("Enter command: ");
     try (Scanner sc = new Scanner(System.in)) {
       while (sc.hasNextLine()) {
@@ -205,7 +209,8 @@ class Tester {
     udpPort = Integer.parseInt(args[2]);
 
     Client client_1 = new Client();
-    client_1.runClient(hostAddress, tcpPort, udpPort);
+    boolean runTCPDefault = true;
+    client_1.runClient(hostAddress, tcpPort, udpPort, runTCPDefault);
 
   }
 
