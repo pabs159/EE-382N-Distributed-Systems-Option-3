@@ -87,8 +87,6 @@ class ServerTester {
 
     Inventory inv = new Inventory(fileName);
     inv.readFile();
-    System.out.println(inv.inventoryTable);
-
 
     Server tcpServer = new TCPServer(inv, tcpPort, fileName);
     new Thread(tcpServer).start();

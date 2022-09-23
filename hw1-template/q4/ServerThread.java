@@ -40,11 +40,9 @@ class TCPServerThread extends ServerThread {
         super(i, socket, dsSocket);
         this.inv = i;
         this.socket = socket;
-        System.out.println(super.inv.inventoryTable);
     }
 
     public void getFile(){
-        System.out.println(this.inv.inventoryTable);
     }
 
     private String parseCommand(String command){
@@ -53,15 +51,11 @@ class TCPServerThread extends ServerThread {
         }
         String[] splitStr = command.split(" ");
         String methodStr = splitStr[0];
-        System.out.println("Method string: " + methodStr);
         if(splitStr.length > 1){
-            System.out.println("Inside");
             if(splitStr[1].toUpperCase().equals("U")){
                 return "closing connection";
             }
         }
-        System.out.println(methodStr);
-
         switch (methodStr) {
             case "purchase" -> {
                 return this.inv.purchase(splitStr[1], splitStr[2], Integer.parseInt(splitStr[3]));

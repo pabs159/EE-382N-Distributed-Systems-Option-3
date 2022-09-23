@@ -1,0 +1,11 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "/Users/pablosmith/Downloads/commons-io-2.11.0/**/*.jar",
+        "/Users/pablosmith/Downloads/commons-text-1.9/**/*.jar",
+        "/Users/pablosmith/Downloads/commons-lang3-3.12.0/**/*.jar"
+        
+
+    ],
+    "java.format.settings.url": "~/.vscode/eclipse-java-google-style.xml"
+}
